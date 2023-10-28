@@ -2,3 +2,4 @@
 03-CRD-GO-CLIENTSET/crd-sample/pkg/clientset
 03-CRD-GO-CLIENTSET/crd-sample/pkg/apis/myresource/v1alpha1/zz_generated.deepcopy.go
 03-CRD-GO-CLIENTSET/crd-sample/pkg/apis/myresource/v1alpha1/zz_generated.register.go
+.vagrant/

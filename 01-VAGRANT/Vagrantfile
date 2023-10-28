@@ -28,6 +28,7 @@ Vagrant.configure("2") do |config|
 
   # Use NCHC Mirror
   config.vm.provision "shell", inline: <<-SHELL
+    echo "Use NCHC Mirror and change DNS"
 
     sed -i '/^DNS/c\DNS=8.8.8.8' /etc/systemd/resolved.conf
     systemctl restart systemd-resolved.service
@@ -41,6 +42,8 @@ Vagrant.configure("2") do |config|
   # Install Docker
   # https://docs.docker.com/engine/install/ubuntu/
   config.vm.provision "shell", inline: <<-SHELL
+    echo "Install Docker"
+
     for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
     # Add Docker's official GPG key:
@@ -63,11 +66,13 @@ Vagrant.configure("2") do |config|
   # Install KinD and create cluster
   # https://kind.sigs.k8s.io/docs/user/quick-start/#installation
   config.vm.provision "shell", inline: <<-SHELL
+    echo "Install KinD"
     # Install KinD
     [ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
     chmod +x ./kind
     sudo mv ./kind /usr/local/bin/kind
 
+    echo "Create a cluster"
     # Crate a cluster
     kind create cluster
   SHELL
@@ -75,6 +80,7 @@ Vagrant.configure("2") do |config|
   # Install Kubectl 
   # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
   config.vm.provision "shell", inline: <<-SHELL
+    echo "Install Kubectl"
     wget -qO /usr/local/bin/kubectl https://dl.k8s.io/release/v1.24.7/bin/linux/amd64/kubectl && \
     chmod +x /usr/local/bin/kubectl
   SHELL
@@ -82,6 +88,7 @@ Vagrant.configure("2") do |config|
   # Install Go
   # https://go.dev/doc/install
   config.vm.provision "shell", inline: <<-SHELL
+    echo "Install Go"
     apt install make
     wget -qO /tmp/go.tar.gz https://golang.org/dl/go1.20.1.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf /tmp/go.tar.gz && rm /tmp/go.tar.gz
@@ -92,9 +99,17 @@ Vagrant.configure("2") do |config|
   SHELL
 
   # Get latest example from github
-  config.vm.provision "shell", inline: <<-SHELL
+  config.vm.provision "shell", run: "always" ,inline: <<-SHELL
     echo "clone from github"
-    # git clone 
-  SHELL  
+    if [ -d "/opt/112-1-ntcu-kubernetes-operator-workshop" ]; then
+      # ignore local changes, overwrite with upstream
+      git -C /opt/112-1-ntcu-kubernetes-operator-workshop fetch
+      git -C /opt/112-1-ntcu-kubernetes-operator-workshop reset --hard HEAD
+      git -C /opt/112-1-ntcu-kubernetes-operator-workshop merge '@{u}'      
+    else
+      git -C /opt/ clone https://github.com/ogre0403/112-1-ntcu-kubernetes-operator-workshop.git
+    fi
+
+  SHELL
 
 end
